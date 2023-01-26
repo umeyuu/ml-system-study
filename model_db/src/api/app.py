@@ -17,3 +17,4 @@ app = FastAPI(
 )
 
 app.include_router(health.router, prefix=f"/v{APIConfigurations.version}/health", tags=["health"])
+app.include_router(api.router, prefix=f"/v{APIConfigurations.version}/api", tags=["api"])
