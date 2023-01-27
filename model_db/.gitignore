@@ -1,0 +1,5 @@
+env/
+src/__pycache__/
+src/api/__pycache__/
+src/api/routers/__pycache__/
+src/db/__pycache__/
