@@ -1,0 +1,11 @@
+name: example
+
+docker_env:
+  image: example/mlflow-docker
+  volumes: ["$(pwd):/mnt"]
+
+entry_points:
+  fetch:
+    command: "wget -P /mnt/data https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv"
+  preprocess:
+    command: "python3 -m example.preprocess"
