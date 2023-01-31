@@ -1,22 +1,63 @@
-# MLflow racking API よりコード部分引用
-# https://www.mlflow.org/docs/latest/quickstart.html
+import argparse
 import os
-from random import randint, random
 
-from mlflow import log_artifacts, log_metric, log_param
+import mlflow
 
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Runner",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+
+    parser.add_argument(
+        "--commit_hash",
+        type=str,
+        default="000000",
+        help="code commit hash",
+    )
+
+    parser.add_argument(
+        "--preprocess_data",
+        type=str,
+        default="cifar10",
+        help="cifar10 or cifar100; default cifar10",
+    )
+    parser.add_argument(
+        "--preprocess_downstream",
+        type=str,
+        default="./preprocess/data/preprocess",
+        help="preprocess downstream directory",
+    )
+    parser.add_argument(
+        "--preprocess_cached_data_id",
+        type=str,
+        default="",
+        help="previous run id for cache",
+    )
+
+    parser.add_argument(
+        "--train_upstream",
+        type=str,
+        default="./preprocess/data/preprocess",
+        help="upstream directory",
+    )
+    
+    args = parser.parse_args()
+    mlflow_experiment_id = int(os.getenv("MLFLOW_EXPERIMENT_ID", 0))
+
+    with mlflow.start_run() as r:
+        preprocess_run = mlflow.run(
+            uri="./preprocess",
+            entry_point="preprocess",
+            backend="local",
+            parameters={
+                "data": args.preprocess_data,
+                "downstream": args.preprocess_downstream,
+                "cached_data_id": args.preprocess_cached_data_id,
+            },
+        )
+        preprocess_run = mlflow.tracking.MlflowClient().get_run(preprocess_run.run_id)
+        
 if __name__ == "__main__":
-    # パラメータ（キーと値のペア）を記録する
-    log_param("param1", randint(0, 100))
-
-    # 指標を記録し、実行中に指標を更新することが可能（ MLflowに記録）
-    log_metric("foo", random())
-    log_metric("foo", random() + 1)
-    log_metric("foo", random() + 2)
-
-    # アーティファクト（出力ファイル）のログ
-    if not os.path.exists("outputs"):
-        os.makedirs("outputs")
-    with open("outputs/test.txt", "w") as f:
-        f.write("hello world!")
-    log_artifacts("outputs") # フォルダごと記録
+    main()
